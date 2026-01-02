@@ -14,4 +14,4 @@ RUN npm install && npm run build
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "index.js"]
+CMD ["node", "dist/main.js"]
