@@ -85,14 +85,15 @@ export class TransactionsService {
   }
 
   /**
-   * Calculates and returns the balance
+   * Calculates and returns the balance for a specific user
    * Balance = SUM(CREDIT amounts) - SUM(DEBIT amounts)
    * Uses database query for optimal performance
+   * @param userId - User ID to calculate balance for
    * @returns Balance amount
    */
-  async getBalance(): Promise<BalanceResponseDto> {
+  async getBalance(userId: string): Promise<BalanceResponseDto> {
     try {
-      // Query to calculate balance directly in database
+      // Query to calculate balance directly in database for specific user
       const result = await this.transactionsRepository
         .createQueryBuilder('transaction')
         .select(
@@ -102,6 +103,7 @@ export class TransactionsService {
         `,
           'balance',
         )
+        .where('transaction.user_id = :userId', { userId })
         .setParameters({
           credit: TransactionType.CREDIT,
           debit: TransactionType.DEBIT,

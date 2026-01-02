@@ -160,9 +160,9 @@ Content-Type: application/json
 Authorization: Bearer <token>
 
 {
+  "user_id": "user-uuid",
   "type": "CREDIT",
   "amount": 100.50,
-  "description": "Payment received"
 }
 ```
 

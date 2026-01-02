@@ -4,8 +4,8 @@ services:
     container_name: wallet-postgres
     environment:
       POSTGRES_DB: wallet_db
-      POSTGRES_USER: wallet_user
-      POSTGRES_PASSWORD: wallet_pass
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -31,12 +31,15 @@ services:
       dockerfile: Dockerfile
     container_name: wallet-microservice
     environment:
-      NODE_ENV: development
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: wallet_db
-      DB_USER: wallet_user
-      DB_PASSWORD: wallet_pass
+      NODE_ENV: ${NODE_ENV}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      PORT: ${PORT}
     ports:
       - "3001:3001"
     depends_on:

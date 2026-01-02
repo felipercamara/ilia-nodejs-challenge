@@ -16,6 +16,8 @@ import {
   QueryTransactionDto,
   BalanceResponseDto,
 } from './dto';
+import { CurrentUser } from './interfaces/user-context.interface';
+import type { IUserContext } from './interfaces/user-context.interface';
 
 /**
  * Transactions Controller
@@ -57,13 +59,16 @@ export class TransactionsController {
 
   /**
    * GET /balance
-   * Returns consolidated balance from all CREDIT and DEBIT transactions
+   * Returns consolidated balance from all CREDIT and DEBIT transactions for the authenticated user
    * Calculation: SUM(CREDIT amounts) - SUM(DEBIT amounts)
+   * @param user - Authenticated user context
    * @returns Balance amount
    */
   @Get('balance')
   @UseGuards(JwtAuthGuard)
-  async getBalance(): Promise<BalanceResponseDto> {
-    return this.transactionsService.getBalance();
+  async getBalance(
+    @CurrentUser() user: IUserContext,
+  ): Promise<BalanceResponseDto> {
+    return this.transactionsService.getBalance(user.userId);
   }
 }
