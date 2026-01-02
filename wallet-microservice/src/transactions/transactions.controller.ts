@@ -6,14 +6,18 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
+import { JwtAuthGuard } from '../auth';
 import {
   CreateTransactionDto,
   TransactionResponseDto,
   QueryTransactionDto,
   BalanceResponseDto,
 } from './dto';
+import { CurrentUser } from './interfaces/user-context.interface';
+import type { IUserContext } from './interfaces/user-context.interface';
 
 /**
  * Transactions Controller
@@ -32,7 +36,7 @@ export class TransactionsController {
    */
   @Post('transactions')
   @HttpCode(HttpStatus.CREATED)
-  // @UseGuards(AuthGuard) // TODO: Implement JWT authentication guard
+  @UseGuards(JwtAuthGuard)
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
   ): Promise<TransactionResponseDto> {
@@ -46,7 +50,7 @@ export class TransactionsController {
    * @returns List of transactions
    */
   @Get('transactions')
-  // @UseGuards(AuthGuard) // TODO: Implement JWT authentication guard
+  @UseGuards(JwtAuthGuard)
   async getTransactions(
     @Query() query: QueryTransactionDto,
   ): Promise<TransactionResponseDto[]> {
@@ -55,13 +59,16 @@ export class TransactionsController {
 
   /**
    * GET /balance
-   * Returns consolidated balance from all CREDIT and DEBIT transactions
+   * Returns consolidated balance from all CREDIT and DEBIT transactions for the authenticated user
    * Calculation: SUM(CREDIT amounts) - SUM(DEBIT amounts)
+   * @param user - Authenticated user context
    * @returns Balance amount
    */
   @Get('balance')
-  // @UseGuards(AuthGuard) // TODO: Implement JWT authentication guard
-  async getBalance(): Promise<BalanceResponseDto> {
-    return this.transactionsService.getBalance();
+  @UseGuards(JwtAuthGuard)
+  async getBalance(
+    @CurrentUser() user: IUserContext,
+  ): Promise<BalanceResponseDto> {
+    return this.transactionsService.getBalance(user.userId);
   }
 }

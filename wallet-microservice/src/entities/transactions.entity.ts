@@ -2,32 +2,22 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { WalletEntity } from './wallets.entity';
 import { TransactionType } from '@src/transactions/enums/transaction-type.enum';
 
 /**
  * Transactions Entity
  * Represents a transaction record in the database
  */
-@Entity('transactions')
+@Entity({ name: 'transactions' })
 export class TransactionsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'uuid' })
   user_id: string;
-
-  @ManyToOne(() => WalletEntity)
-  @JoinColumn({ name: 'walletId' })
-  wallet: WalletEntity;
-
-  @Column()
-  walletId: string;
 
   @Column({ type: 'enum', enum: TransactionType })
   type: TransactionType;

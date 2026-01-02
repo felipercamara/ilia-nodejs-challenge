@@ -13,10 +13,10 @@ export interface IUserContext {
  * Custom decorator to extract user from request
  * Usage: @CurrentUser() user: IUserContext
  */
-// import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-// export const CurrentUser = createParamDecorator(
-//   (data: unknown, ctx: ExecutionContext): IUserContext => {
-//     const request = ctx.switchToHttp().getRequest();
-//     return request.user;
-//   },
-// );
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+export const CurrentUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext): IUserContext => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user;
+  },
+);
