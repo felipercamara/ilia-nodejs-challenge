@@ -1,22 +1,17 @@
-FROM node:18-alpine AS builder
-
+FROM node:lts-alpine AS builder
 WORKDIR /app
 
-COPY package.json tsconfig.json tsconfig.build.json ./
-RUN npm ci
+# Copy package and configuration
+COPY package.json tsconfig.json ./
 
-COPY . .
-RUN npm run build
+# Copy source code
+COPY src ./src
 
-FROM node:18-alpine
+# Install dependencies and build
+RUN npm install && npm run build
 
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY --from=builder /app/dist ./dist
-
+# Expose application port
 EXPOSE 3000
+
 
 CMD ["node", "dist/main"]
