@@ -11,7 +11,7 @@ COPY src ./src
 RUN npm install && npm run build
 
 # Expose application port
-EXPOSE 3000
+EXPOSE 3001
 
 
 CMD ["node", "dist/main"]

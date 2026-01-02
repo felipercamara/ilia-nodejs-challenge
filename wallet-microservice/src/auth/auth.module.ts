@@ -1,0 +1,30 @@
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+
+/**
+ * Authentication Module
+ * Provides JWT authentication using ILIACHALLENGE as secret
+ * Configures Passport JWT strategy for route protection
+ */
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET') || 'ILIACHALLENGE',
+        signOptions: {
+          expiresIn: '24h',
+        },
+      }),
+    }),
+  ],
+  providers: [JwtStrategy, JwtAuthGuard],
+  exports: [JwtAuthGuard, PassportModule, JwtModule],
+})
+export class AuthModule {}

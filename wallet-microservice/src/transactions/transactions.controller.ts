@@ -6,8 +6,10 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
+import { JwtAuthGuard } from '../auth';
 import {
   CreateTransactionDto,
   TransactionResponseDto,
@@ -32,7 +34,7 @@ export class TransactionsController {
    */
   @Post('transactions')
   @HttpCode(HttpStatus.CREATED)
-  // @UseGuards(AuthGuard) // TODO: Implement JWT authentication guard
+  @UseGuards(JwtAuthGuard)
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
   ): Promise<TransactionResponseDto> {
@@ -46,7 +48,7 @@ export class TransactionsController {
    * @returns List of transactions
    */
   @Get('transactions')
-  // @UseGuards(AuthGuard) // TODO: Implement JWT authentication guard
+  @UseGuards(JwtAuthGuard)
   async getTransactions(
     @Query() query: QueryTransactionDto,
   ): Promise<TransactionResponseDto[]> {
@@ -60,7 +62,7 @@ export class TransactionsController {
    * @returns Balance amount
    */
   @Get('balance')
-  // @UseGuards(AuthGuard) // TODO: Implement JWT authentication guard
+  @UseGuards(JwtAuthGuard)
   async getBalance(): Promise<BalanceResponseDto> {
     return this.transactionsService.getBalance();
   }

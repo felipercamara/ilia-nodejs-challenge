@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionsEntity } from './entities/transactions.entity';
 import { TransactionsModule } from './transactions/transactions.module';
+import { AuthModule } from './auth';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TransactionsModule } from './transactions/transactions.module';
       entities: [TransactionsEntity],
       migrations: ['./migrations/*{.ts,.js}'],
     }),
+    AuthModule,
     TransactionsModule,
   ],
   controllers: [AppController],
