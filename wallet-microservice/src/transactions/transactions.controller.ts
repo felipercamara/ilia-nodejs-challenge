@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Query,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -32,7 +31,7 @@ export class TransactionsController {
    * @returns Created transaction details
    */
   @Post('transactions')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   // @UseGuards(AuthGuard) // TODO: Implement JWT authentication guard
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,

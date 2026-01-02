@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TransactionsEntity } from '@src/entities/transactions.entity';
@@ -48,7 +44,10 @@ export class TransactionsService {
       // Map to response DTO
       return this.mapToResponseDto(savedTransaction);
     } catch (error) {
-      throw new BadRequestException('Failed to create transaction');
+      throw new BadRequestException(
+        'Failed to create transaction',
+        error.message,
+      );
     }
   }
 
@@ -78,7 +77,10 @@ export class TransactionsService {
         this.mapToResponseDto(transaction),
       );
     } catch (error) {
-      throw new BadRequestException('Failed to retrieve transactions');
+      throw new BadRequestException(
+        'Failed to retrieve transactions',
+        error.message,
+      );
     }
   }
 
@@ -110,7 +112,10 @@ export class TransactionsService {
 
       return new BalanceResponseDto(balance);
     } catch (error) {
-      throw new BadRequestException('Failed to calculate balance');
+      throw new BadRequestException(
+        'Failed to calculate balance',
+        error.message,
+      );
     }
   }
 
