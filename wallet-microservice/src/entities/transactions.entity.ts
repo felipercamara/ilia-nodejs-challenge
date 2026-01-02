@@ -10,10 +10,17 @@ import {
 import { WalletEntity } from './wallets.entity';
 import { TransactionType } from '@src/transactions/enums/transaction-type.enum';
 
+/**
+ * Transactions Entity
+ * Represents a transaction record in the database
+ */
 @Entity('transactions')
 export class TransactionsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ type: 'uuid' })
+  user_id: string;
 
   @ManyToOne(() => WalletEntity)
   @JoinColumn({ name: 'walletId' })
