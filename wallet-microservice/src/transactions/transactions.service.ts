@@ -9,6 +9,7 @@ import {
   BalanceResponseDto,
 } from './dto';
 import { TransactionType } from './enums/transaction-type.enum';
+import { UserHttpService } from '../users-http';
 
 /**
  * Transactions Service
@@ -19,17 +20,36 @@ export class TransactionsService {
   constructor(
     @InjectRepository(TransactionsEntity)
     private readonly transactionsRepository: Repository<TransactionsEntity>,
+    private readonly userHttpService: UserHttpService,
   ) {}
 
   /**
    * Creates a new transaction
+   * Validates user exists in User Microservice before creating transaction
    * @param createTransactionDto - Transaction data
+   * @param authToken - JWT token for user validation (optional)
    * @returns Created transaction
    */
   async createTransaction(
     createTransactionDto: CreateTransactionDto,
+    authToken?: string,
   ): Promise<TransactionResponseDto> {
     try {
+      // Validate user exists in User Microservice if auth token is provided
+      // This creates the integration between wallet and user microservices
+      if (authToken) {
+        try {
+          await this.userHttpService.validateUser(
+            createTransactionDto.user_id,
+            authToken,
+          );
+        } catch (error) {
+          throw new BadRequestException(
+            'User validation failed. User does not exist or is invalid.',
+          );
+        }
+      }
+
       // Create new transaction entity
       const transaction = this.transactionsRepository.create({
         user_id: createTransactionDto.user_id,

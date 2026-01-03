@@ -1,6 +1,6 @@
 # Quick Start Guide - ília Code Challenge
 
-## Quick Start (5 minutes)
+## 🚀 Quick Start (5 minutes)
 
 ### Prerequisites
 
@@ -67,7 +67,7 @@ curl -X POST http://localhost:3001/transactions \
   }'
 ```
 
-**If you see a transaction created, the integration is working!**
+✅ **If you see a transaction created, the integration is working!**
 
 The Wallet Microservice just validated your user with the User Microservice! 🎉
 
@@ -80,7 +80,7 @@ curl -X GET http://localhost:3001/balance \
 
 Expected: `{"amount": 100.50}`
 
-## Service Endpoints
+## 📚 Service Endpoints
 
 ### User Microservice (Port 3002)
 
@@ -102,7 +102,7 @@ Expected: `{"amount": 100.50}`
 | GET    | `/transactions?type=CREDIT` | Yes           | Filter by type                       |
 | GET    | `/balance`                  | Yes           | Get balance                          |
 
-## Important Values
+## 🔑 Important Values
 
 - **JWT Secret**: `ILIACHALLENGE` (as required by challenge)
 - **JWT Internal**: `ILIACHALLENGE_INTERNAL` (for inter-service communication)
@@ -110,7 +110,7 @@ Expected: `{"amount": 100.50}`
 - **User Microservice**: http://localhost:3002
 - **Wallet Microservice**: http://localhost:3001
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Services not starting?
 
@@ -153,8 +153,45 @@ docker compose up -d --build
 - [API Testing Guide](./API_TESTING.md) - Complete API examples
 - [Implementation Summary](./IMPLEMENTATION_SUMMARY.md) - What was built
 - [User Microservice README](./user-microservice/README.md) - Service details
+- [Main README](./README.md) - Challenge requirements
 
-## Pro Tips
+## ✅ Quick Validation Checklist
+
+- [ ] Both Docker containers are running (`docker compose ps`)
+- [ ] User creation works (POST /users)
+- [ ] Login works and returns JWT token (POST /auth)
+- [ ] Transaction creation works (POST /transactions)
+- [ ] Balance calculation works (GET /balance)
+- [ ] Protected endpoints require authentication
+- [ ] Wallet MS validates users with User MS (the integration!)
+
+## 🎯 Key Features Implemented
+
+✅ **Part 1 - Wallet Microservice**
+
+- Port 3001
+- JWT authentication (ILIACHALLENGE)
+- PostgreSQL database
+- Transaction CRUD
+- Balance calculation
+
+✅ **Part 2 - User Microservice**
+
+- Port 3002
+- JWT authentication (ILIACHALLENGE)
+- Separate PostgreSQL database
+- User CRUD + Authentication
+- **REST integration with Wallet MS** ⭐
+
+✅ **Integration**
+
+- REST HTTP communication
+- User validation before transactions
+- JWT token propagation
+- Error handling
+- Docker orchestration
+
+## 💡 Pro Tips
 
 1. **Save your JWT token** - It's valid for 24 hours
 2. **Use environment variables** - All configs in .env files
@@ -162,7 +199,7 @@ docker compose up -d --build
 4. **Use jq** - Format JSON: `curl ... | jq`
 5. **Test incrementally** - User → Auth → Transaction → Balance
 
-## Common Issues
+## 🚨 Common Issues
 
 **401 Unauthorized**: Your JWT token expired or is invalid. Login again.
 
@@ -172,7 +209,7 @@ docker compose up -d --build
 
 **Connection refused**: Services not running. Run `docker compose up -d`
 
-## Support
+## 📞 Support
 
 For detailed information, check the documentation files:
 
@@ -181,3 +218,7 @@ For detailed information, check the documentation files:
 - Implementation: [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)
 
 ---
+
+**Happy coding!** 🤓
+
+Challenge completed with ❤️ for ília Digital

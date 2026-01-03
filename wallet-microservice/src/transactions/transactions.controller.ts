@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { JwtAuthGuard } from '../auth';
@@ -31,7 +32,9 @@ export class TransactionsController {
   /**
    * POST /transactions
    * Creates a new transaction (CREDIT or DEBIT)
+   * Validates user exists in User Microservice
    * @param createTransactionDto - Transaction data
+   * @param authorization - Authorization header with JWT token
    * @returns Created transaction details
    */
   @Post('transactions')
@@ -39,8 +42,14 @@ export class TransactionsController {
   @UseGuards(JwtAuthGuard)
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
+    @Headers('authorization') authorization?: string,
   ): Promise<TransactionResponseDto> {
-    return this.transactionsService.createTransaction(createTransactionDto);
+    // Extract token from "Bearer <token>"
+    const token = authorization?.replace('Bearer ', '');
+    return this.transactionsService.createTransaction(
+      createTransactionDto,
+      token,
+    );
   }
 
   /**
