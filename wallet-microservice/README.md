@@ -170,7 +170,7 @@ Authorization: Bearer <token>
 {
   "user_id": "user-uuid",
   "type": "CREDIT",
-  "amount": 100.50
+  "amount": 100
 }
 ```
 

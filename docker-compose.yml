@@ -89,7 +89,7 @@ services:
       dockerfile: Dockerfile
     container_name: user-microservice
     environment:
-      NODE_ENV: ${NODE_ENV:-developmet}
+      NODE_ENV: ${NODE_ENV:-development}
       DB_HOST: user-postgres
       DB_PORT: 5432
       DB_NAME: user_db

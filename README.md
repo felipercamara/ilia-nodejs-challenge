@@ -21,34 +21,10 @@ docker compose ps
 
 ## Test the API
 
-**Note:** All routes require JWT authentication, including user creation. For initial testing, generate a JWT token manually.
-
-### 0. Generate Initial JWT Token (Bootstrap)
-
-Since all routes require authentication, generate a JWT token manually using the `JWT_SECRET` (`ILIACHALLENGE`):
-
-```bash
-# Using Node.js
-node -e "
-const jwt = require('jsonwebtoken');
-const token = jwt.sign({ userId: 'bootstrap', email: 'test@example.com' }, 'ILIACHALLENGE', { expiresIn: '24h' });
-console.log(token);
-"
-```
-
-Or use [jwt.io](https://jwt.io) with:
-
-- **Algorithm**: HS256
-- **Secret**: `ILIACHALLENGE`
-- **Payload**: `{"userId": "bootstrap", "email": "test@example.com", "iat": 1234567890, "exp": 9999999999}`
-
-Copy the generated token for use in the examples below.
-
 ### 1. Create User
 
 ```bash
 curl -X POST http://localhost:3002/users \
-  -H "Authorization: Bearer <TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "first_name": "João",
@@ -79,7 +55,7 @@ curl -X POST http://localhost:3001/transactions \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "<USER_ID>",
-    "amount": 100.50,
+    "amount": 100,
     "type": "CREDIT"
   }'
 ```
@@ -92,7 +68,7 @@ curl -X POST http://localhost:3001/transactions \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "<USER_ID>",
-    "amount": 50.00,
+    "amount": 50,
     "type": "DEBIT"
   }'
 ```

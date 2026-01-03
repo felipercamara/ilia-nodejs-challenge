@@ -182,7 +182,7 @@ npm run test:watch
 
 ### Users
 
-- `POST /users` - Create a new user (requires JWT)
+- `POST /users` - Create a new user
 - `GET /users` - Get all users (requires JWT)
 - `GET /users/:id` - Get user by ID (requires JWT)
 - `PATCH /users/:id` - Update user (requires JWT)
