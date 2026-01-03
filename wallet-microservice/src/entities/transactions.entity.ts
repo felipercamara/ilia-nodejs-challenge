@@ -22,7 +22,7 @@ export class TransactionsEntity {
   @Column({ type: 'enum', enum: TransactionType })
   type: TransactionType;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('int')
   amount: number;
 
   @CreateDateColumn()

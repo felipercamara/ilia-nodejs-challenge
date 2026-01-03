@@ -1,7 +1,7 @@
 import {
   IsEnum,
   IsNotEmpty,
-  IsNumber,
+  IsInt,
   IsString,
   IsUUID,
   Min,
@@ -19,7 +19,7 @@ export class CreateTransactionDto {
   user_id: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @IsInt()
   @Min(0)
   amount: number;
 

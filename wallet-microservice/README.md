@@ -9,6 +9,11 @@ Digital Wallet microservice for managing user transactions (CREDIT and DEBIT ope
 - PostgreSQL database with TypeORM
 - Docker containerization
 - Comprehensive test coverage
+- User validation through User Microservice integration
+- Insufficient funds validation for DEBIT transactions
+- Balance calculation (CREDIT - DEBIT)
+- Global validation pipes
+- Query-based transaction filtering
 
 ## 📋 Prerequisites
 
@@ -33,6 +38,9 @@ NODE_ENV='development'
 JWT_SECRET='ILIACHALLENGE'
 JWT_EXPIRES_IN='24h'
 PORT=3001
+
+# User Microservice Integration
+USER_SERVICE_URL='http://user-microservice:3002'
 ```
 
 ## 🐳 Running with Docker
@@ -115,7 +123,7 @@ Authorization: Bearer <your-jwt-token>
 
 ### Generating JWT Tokens for Testing
 
-Since the token generation endpoint is not implemented yet, you can generate test tokens using one of these methods:
+You can obtain JWT tokens from the User Microservice (POST /auth), or generate test tokens using one of these methods:
 
 **Method 1: Node.js Command (Recommended)**
 
@@ -162,9 +170,19 @@ Authorization: Bearer <token>
 {
   "user_id": "user-uuid",
   "type": "CREDIT",
-  "amount": 100.50,
+  "amount": 100.50
 }
 ```
+
+**Returns:** `201 Created`
+
+**Validations:**
+
+- Validates user exists in User Microservice
+- For DEBIT transactions: checks for sufficient funds
+- Amount must be >= 0
+- user_id must be valid UUID
+- type must be CREDIT or DEBIT
 
 ### Get Transactions
 
@@ -177,6 +195,8 @@ Query Parameters:
 
 - `type` (optional): Filter by transaction type (CREDIT or DEBIT)
 
+**Returns:** Array of transactions for the authenticated user
+
 ### Get Balance
 
 ```http
@@ -184,7 +204,9 @@ GET /balance
 Authorization: Bearer <token>
 ```
 
-Returns the consolidated balance: SUM(CREDIT) - SUM(DEBIT)
+**Returns:** `{ "amount": number }`
+
+Calculates consolidated balance for authenticated user: SUM(CREDIT) - SUM(DEBIT)
 
 ## 🏗️ Project Structure
 
@@ -199,15 +221,26 @@ wallet-microservice/
 │   │   └── transactions.entity.ts
 │   ├── transactions/           # Transactions module
 │   │   ├── dto/               # Data Transfer Objects
+│   │   │   ├── create-transaction.dto.ts
+│   │   │   ├── query-transaction.dto.ts
+│   │   │   ├── transaction-response.dto.ts
+│   │   │   └── balance-response.dto.ts
 │   │   ├── enums/             # Transaction types enum
 │   │   ├── filters/           # Exception filters
 │   │   ├── interceptors/      # Logging interceptor
+│   │   ├── interfaces/        # TypeScript interfaces
 │   │   ├── test/              # Unit tests
 │   │   ├── transactions.controller.ts
 │   │   ├── transactions.service.ts
 │   │   └── transactions.module.ts
+│   ├── users-http/            # User Microservice HTTP client
+│   │   ├── user-http.service.ts
+│   │   └── user-http.module.ts
+│   ├── utils/                 # Utilities and constants
+│   │   └── constants.ts
 │   ├── app.module.ts
 │   └── main.ts
+├── coverage/                   # Test coverage reports
 ├── test/                       # E2E tests
 ├── docker-compose.yml
 ├── Dockerfile
@@ -256,3 +289,7 @@ npm run migration:revert
 - For production, use strong, randomly generated secrets
 - Default secret `ILIACHALLENGE` is for development/challenge purposes only
 - All routes are protected by JWT authentication
+- User validation through User Microservice integration
+- Insufficient funds validation prevents negative balances
+- Whitelist validation (strips unknown properties)
+- Transform validation enabled

@@ -25,7 +25,7 @@ export class UsersController {
 
   /**
    * POST /users
-   * Creates a new user (public endpoint - no auth required)
+   * Creates a new user (public endpoint - no authentication required)
    * @param createUserDto - User creation data
    * @returns Created user details without password
    */
@@ -81,7 +81,7 @@ export class UsersController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
   }

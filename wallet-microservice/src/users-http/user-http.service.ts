@@ -2,6 +2,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { FAILED_TO_CONNECT_USER_SERVICE } from '@src/utils/constants';
 
 export interface UserValidationResponse {
   id: string;
@@ -59,9 +60,7 @@ export class UserHttpService {
         `Failed to validate user ${userId}: ${error.message}`,
         error.stack,
       );
-      throw new UnauthorizedException(
-        'Failed to validate user with User Microservice',
-      );
+      throw new UnauthorizedException(FAILED_TO_CONNECT_USER_SERVICE);
     }
   }
 }

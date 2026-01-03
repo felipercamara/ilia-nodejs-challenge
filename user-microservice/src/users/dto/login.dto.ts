@@ -1,6 +1,7 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class LoginDto {
+export class UserCredentialsDto {
   @IsNotEmpty()
   @IsEmail()
   email: string;
@@ -8,4 +9,10 @@ export class LoginDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+}
+
+export class LoginDto {
+  @ValidateNested()
+  @Type(() => UserCredentialsDto)
+  user: UserCredentialsDto;
 }

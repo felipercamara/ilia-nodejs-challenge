@@ -1,34 +1,54 @@
-# Quick Start Guide - ília Code Challenge
+# ília Node.js Challenge
 
-## Quick Start (5 minutes)
+## Quick Start
 
 ### Prerequisites
 
-- Docker and Docker Compose installed
-- Git
+- Docker and Docker Compose
 - cURL or Postman
 
-### 1. Start Services (30 seconds)
+### Start Services
 
 ```bash
 docker compose up -d
 ```
 
-### 2. Wait for Services to Start (10 seconds)
+Check services are healthy:
 
 ```bash
-# Check if services are healthy
 docker compose ps
 ```
 
-Both `user-microservice` and `wallet-microservice` should show "Up" status.
+## Test the API
 
-### 3. Test the Integration (3 minutes)
+**Note:** All routes require JWT authentication, including user creation. For initial testing, generate a JWT token manually.
 
-#### Step 1: Create a User
+### 0. Generate Initial JWT Token (Bootstrap)
+
+Since all routes require authentication, generate a JWT token manually using the `JWT_SECRET` (`ILIACHALLENGE`):
+
+```bash
+# Using Node.js
+node -e "
+const jwt = require('jsonwebtoken');
+const token = jwt.sign({ userId: 'bootstrap', email: 'test@example.com' }, 'ILIACHALLENGE', { expiresIn: '24h' });
+console.log(token);
+"
+```
+
+Or use [jwt.io](https://jwt.io) with:
+
+- **Algorithm**: HS256
+- **Secret**: `ILIACHALLENGE`
+- **Payload**: `{"userId": "bootstrap", "email": "test@example.com", "iat": 1234567890, "exp": 9999999999}`
+
+Copy the generated token for use in the examples below.
+
+### 1. Create User
 
 ```bash
 curl -X POST http://localhost:3002/users \
+  -H "Authorization: Bearer <TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "first_name": "João",
@@ -38,9 +58,7 @@ curl -X POST http://localhost:3002/users \
   }'
 ```
 
-**Copy the `id` from the response!**
-
-#### Step 2: Login
+### 2. Login
 
 ```bash
 curl -X POST http://localhost:3002/auth \
@@ -51,12 +69,11 @@ curl -X POST http://localhost:3002/auth \
   }'
 ```
 
-**Copy the `access_token` from the response!**
+Copy the `access_token` from response for subsequent requests.
 
-#### Step 3: Create Transaction (Integration Test!)
+### 3. Create Transaction (CREDIT)
 
 ```bash
-# Replace <TOKEN> and <USER_ID> with values from above
 curl -X POST http://localhost:3001/transactions \
   -H "Authorization: Bearer <TOKEN>" \
   -H "Content-Type: application/json" \
@@ -67,117 +84,99 @@ curl -X POST http://localhost:3001/transactions \
   }'
 ```
 
-**If you see a transaction created, the integration is working!**
+### 4. Create Transaction (DEBIT)
 
-The Wallet Microservice just validated your user with the User Microservice! 🎉
+```bash
+curl -X POST http://localhost:3001/transactions \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "<USER_ID>",
+    "amount": 50.00,
+    "type": "DEBIT"
+  }'
+```
 
-#### Step 4: Check Balance
+### 5. List All Transactions
+
+```bash
+curl -X GET http://localhost:3001/transactions \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+### 6. List Transactions by Type (CREDIT)
+
+```bash
+curl -X GET "http://localhost:3001/transactions?type=CREDIT" \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+### 7. List Transactions by Type (DEBIT)
+
+```bash
+curl -X GET "http://localhost:3001/transactions?type=DEBIT" \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+### 8. Get Balance
 
 ```bash
 curl -X GET http://localhost:3001/balance \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
-Expected: `{"amount": 100.50}`
-
-## Service Endpoints
+## API Endpoints
 
 ### User Microservice (Port 3002)
 
-| Method | Endpoint     | Auth Required | Description |
-| ------ | ------------ | ------------- | ----------- |
-| POST   | `/users`     | No            | Create user |
-| POST   | `/auth`      | No            | Login       |
-| GET    | `/users`     | Yes           | List users  |
-| GET    | `/users/:id` | Yes           | Get user    |
-| PATCH  | `/users/:id` | Yes           | Update user |
-| DELETE | `/users/:id` | Yes           | Delete user |
+| Endpoint     | Method | Auth | Description |
+| ------------ | ------ | ---- | ----------- |
+| `/auth`      | POST   | No   | Login       |
+| `/users`     | POST   | Yes  | Create user |
+| `/users`     | GET    | Yes  | List users  |
+| `/users/:id` | GET    | Yes  | Get user    |
+| `/users/:id` | PATCH  | Yes  | Update user |
+| `/users/:id` | DELETE | Yes  | Delete user |
 
 ### Wallet Microservice (Port 3001)
 
-| Method | Endpoint                    | Auth Required | Description                          |
-| ------ | --------------------------- | ------------- | ------------------------------------ |
-| POST   | `/transactions`             | Yes           | Create transaction (validates user!) |
-| GET    | `/transactions`             | Yes           | List transactions                    |
-| GET    | `/transactions?type=CREDIT` | Yes           | Filter by type                       |
-| GET    | `/balance`                  | Yes           | Get balance                          |
+| Endpoint                    | Method | Auth | Description        |
+| --------------------------- | ------ | ---- | ------------------ |
+| `/transactions`             | POST   | Yes  | Create transaction |
+| `/transactions`             | GET    | Yes  | List transactions  |
+| `/transactions?type=CREDIT` | GET    | Yes  | Filter by type     |
+| `/balance`                  | GET    | Yes  | Get balance        |
 
-## Important Values
+## Configuration
 
-- **JWT Secret**: `ILIACHALLENGE` (as required by challenge)
-- **JWT Internal**: `ILIACHALLENGE_INTERNAL` (for inter-service communication)
-- **Token Expiry**: 24 hours
-- **User Microservice**: http://localhost:3002
-- **Wallet Microservice**: http://localhost:3001
+Services use environment variables from `.env` file:
+
+- **JWT_SECRET**: `ILIACHALLENGE`
+- **JWT_INTERNAL_SECRET**: `ILIACHALLENGE_INTERNAL`
+- **JWT_EXPIRES_IN**: `24h`
+- **User Service**: Port 3002
+- **Wallet Service**: Port 3001
 
 ## Troubleshooting
 
-### Services not starting?
+Restart services:
 
 ```bash
 docker compose down
 docker compose up -d --build
 ```
 
-### Can't connect to database?
+View logs:
 
 ```bash
-# Check database health
-docker compose ps
-# Both postgres containers should show "(healthy)"
-```
-
-### Need to see logs?
-
-```bash
-# User microservice
-docker compose logs user-microservice -f
-
-# Wallet microservice
-docker compose logs wallet-microservice -f
-
-# All services
 docker compose logs -f
 ```
 
-### Reset everything?
+Reset databases:
 
 ```bash
-docker compose down -v  # Removes volumes (databases)
+docker compose down -v
 docker compose up -d --build
 ```
-
-## 📖 Full Documentation
-
-- [Integration Guide](./INTEGRATION.md) - Detailed architecture and integration
-- [API Testing Guide](./API_TESTING.md) - Complete API examples
-- [Implementation Summary](./IMPLEMENTATION_SUMMARY.md) - What was built
-- [User Microservice README](./user-microservice/README.md) - Service details
-
-## Pro Tips
-
-1. **Save your JWT token** - It's valid for 24 hours
-2. **Use environment variables** - All configs in .env files
-3. **Check logs first** - Most issues show up in logs
-4. **Use jq** - Format JSON: `curl ... | jq`
-5. **Test incrementally** - User → Auth → Transaction → Balance
-
-## Common Issues
-
-**401 Unauthorized**: Your JWT token expired or is invalid. Login again.
-
-**404 Not Found**: Check the URL and port (3001 vs 3002)
-
-**400 Bad Request - User validation failed**: The user_id doesn't exist. Create the user first.
-
-**Connection refused**: Services not running. Run `docker compose up -d`
-
-## Support
-
-For detailed information, check the documentation files:
-
-- Architecture: [INTEGRATION.md](./INTEGRATION.md)
-- Testing: [API_TESTING.md](./API_TESTING.md)
-- Implementation: [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)
 
 ---
