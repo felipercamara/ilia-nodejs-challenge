@@ -16,6 +16,11 @@ import {
   LoginDto,
   AuthResponseDto,
 } from './dto';
+import {
+  EMAIL_ALREADY_EXISTS,
+  INVALID_CREDENTIALS,
+  USER_NOT_FOUND,
+} from '@src/utils/constants';
 
 @Injectable()
 export class UsersService {
@@ -37,7 +42,7 @@ export class UsersService {
     });
 
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException(EMAIL_ALREADY_EXISTS);
     }
 
     // Hash password
@@ -75,7 +80,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { id } });
 
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(USER_NOT_FOUND);
     }
 
     return this.toResponseDto(user);
@@ -94,7 +99,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { id } });
 
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(USER_NOT_FOUND);
     }
 
     // Check if email is being updated and already exists
@@ -104,7 +109,7 @@ export class UsersService {
       });
 
       if (existingUser) {
-        throw new ConflictException('Email already exists');
+        throw new ConflictException(EMAIL_ALREADY_EXISTS);
       }
     }
 
@@ -128,7 +133,7 @@ export class UsersService {
     const result = await this.usersRepository.delete(id);
 
     if (result.affected === 0) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(USER_NOT_FOUND);
     }
   }
 
@@ -139,21 +144,21 @@ export class UsersService {
    */
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const user = await this.usersRepository.findOne({
-      where: { email: loginDto.email },
+      where: { email: loginDto.user.email },
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(INVALID_CREDENTIALS);
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
+      loginDto.user.password,
       user.password,
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException(INVALID_CREDENTIALS);
     }
 
     // Generate JWT token

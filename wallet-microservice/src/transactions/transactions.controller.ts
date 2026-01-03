@@ -38,7 +38,7 @@ export class TransactionsController {
    * @returns Created transaction details
    */
   @Post('transactions')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
@@ -56,14 +56,16 @@ export class TransactionsController {
    * GET /transactions
    * Retrieves transactions with optional type filter
    * @param query - Query parameters (type: CREDIT or DEBIT)
+   * @param user - Authenticated user context
    * @returns List of transactions
    */
   @Get('transactions')
   @UseGuards(JwtAuthGuard)
   async getTransactions(
     @Query() query: QueryTransactionDto,
+    @CurrentUser() user: IUserContext,
   ): Promise<TransactionResponseDto[]> {
-    return this.transactionsService.getTransactions(query);
+    return this.transactionsService.getTransactions(query, user.userId);
   }
 
   /**

@@ -11,8 +11,10 @@ import {
 import { TransactionType } from './enums/transaction-type.enum';
 import { UserHttpService } from '../users-http';
 import {
+  ERROR_FETCHING_TRANSACTIONS,
   FAILED_TO_CALCULATE_BALANCE,
   FAILED_TO_CREATE_TRANSACTION,
+  INSUFFICIENT_FUNDS,
   USER_VALIDATION_FAILED,
 } from '@src/utils/constants';
 
@@ -41,13 +43,23 @@ export class TransactionsService {
   ): Promise<TransactionResponseDto> {
     try {
       // Validate user exists in User Microservice if auth token is provided
-      // This creates the integration between wallet and user microservices
       if (!authToken) throw new BadRequestException(USER_VALIDATION_FAILED);
 
       await this.userHttpService.validateUser(
         createTransactionDto.user_id,
         authToken,
       );
+
+      // Check if user has sufficient funds for DEBIT transaction
+      if (createTransactionDto.type === TransactionType.DEBIT) {
+        const balanceResponse = await this.getBalance(
+          createTransactionDto.user_id,
+        );
+        if (balanceResponse.amount < createTransactionDto.amount) {
+          throw new BadRequestException(INSUFFICIENT_FUNDS);
+        }
+      }
+
       // Create new transaction entity
       const transaction = this.transactionsRepository.create({
         user_id: createTransactionDto.user_id,
@@ -72,19 +84,24 @@ export class TransactionsService {
   /**
    * Retrieves transactions with optional type filter
    * @param query - Query parameters (type filter)
+   * @param userId - User ID to filter transactions
    * @returns List of transactions
    */
   async getTransactions(
     query: QueryTransactionDto,
+    userId: string,
   ): Promise<TransactionResponseDto[]> {
     try {
       // Build query
       const queryBuilder =
         this.transactionsRepository.createQueryBuilder('transaction');
 
+      // Filter by user ID
+      queryBuilder.where('transaction.user_id = :userId', { userId });
+
       // Apply type filter if provided
       if (query.type) {
-        queryBuilder.where('transaction.type = :type', { type: query.type });
+        queryBuilder.andWhere('transaction.type = :type', { type: query.type });
       }
 
       // Execute query
@@ -95,10 +112,7 @@ export class TransactionsService {
         this.mapToResponseDto(transaction),
       );
     } catch (error) {
-      throw new BadRequestException(
-        'Failed to retrieve transactions',
-        error.message,
-      );
+      throw new BadRequestException(ERROR_FETCHING_TRANSACTIONS, error.message);
     }
   }
 

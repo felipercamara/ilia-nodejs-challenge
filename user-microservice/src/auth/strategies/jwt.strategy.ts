@@ -2,6 +2,10 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import {
+  INVALID_TOKEN_PAYLOAD,
+  MISSING_JWT_SECRET,
+} from '@src/utils/constants';
 
 /**
  * JWT Strategy
@@ -14,9 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const jwtSecret = configService.get<string>('JWT_SECRET');
 
     if (!jwtSecret) {
-      throw new Error(
-        'JWT_SECRET configuration is missing. Please set JWT_SECRET in the environment.',
-      );
+      throw new Error(MISSING_JWT_SECRET);
     }
 
     super({
@@ -34,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    */
   async validate(payload: any) {
     if (!payload || !payload.sub) {
-      throw new UnauthorizedException('Invalid token payload');
+      throw new UnauthorizedException(INVALID_TOKEN_PAYLOAD);
     }
 
     // Return user context to be attached to request object

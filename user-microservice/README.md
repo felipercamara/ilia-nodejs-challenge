@@ -4,7 +4,7 @@ This is the User Microservice for the ília Digital Code Challenge (Part 2). It 
 
 ## 🚀 Features
 
-- User registration and authentication
+- User creation and management
 - JWT token-based authentication
 - RESTful API
 - PostgreSQL database with TypeORM
@@ -12,6 +12,9 @@ This is the User Microservice for the ília Digital Code Challenge (Part 2). It 
 - Lightweight PostgreSQL (Alpine-based) for fast builds
 - Health checks and monitoring
 - Input validation with class-validator
+- Password hashing with bcrypt
+- Email uniqueness validation
+- Global validation pipes
 
 ## 📋 Prerequisites
 
@@ -61,11 +64,7 @@ PORT=3002
 
 ### Using Docker Compose (Recommended)
 
-1. Navigate to the root directory of the project:
-
-```bash
-cd /home/felipe/ilia-nodejs-challenge
-```
+1. Navigate to the root directory of the project
 
 2. Make sure you have the `.env` file configured with the environment variables
 
@@ -177,11 +176,13 @@ npm run test:watch
 
 ### Authentication
 
-- `POST /auth` - Authenticate user and get JWT token (public)
+- `POST /auth` - Authenticate user and get JWT token
+  - Request body: `{ "user": { "email": "string", "password": "string" } }`
+  - Response: `{ "user": { "id", "email", "first_name", "last_name", "created_at", "updated_at" }, "access_token": "string" }`
 
 ### Users
 
-- `POST /users` - Register a new user (public)
+- `POST /users` - Create a new user
 - `GET /users` - Get all users (requires JWT)
 - `GET /users/:id` - Get user by ID (requires JWT)
 - `PATCH /users/:id` - Update user (requires JWT)
@@ -198,10 +199,13 @@ Authorization: Bearer <your-jwt-token>
 ## 🔐 Security
 
 - JWT Secret Key: `ILIACHALLENGE` (configurable via environment variable)
-- All routes are protected with JWT authentication
-- Password hashing with bcrypt
-- Input validation on all endpoints
-- CORS enabled for cross-origin requests
+- Most routes are protected with JWT authentication (except POST /auth)
+- Password hashing with bcrypt (salt rounds: 10)
+- Password minimum length: 6 characters
+- Input validation on all endpoints with class-validator
+- Email uniqueness validation
+- Whitelist validation (strips unknown properties)
+- Transform validation enabled
 
 ## 📊 Database Schema
 
@@ -212,7 +216,8 @@ CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -241,128 +246,29 @@ The PostgreSQL database includes health checks that verify the service is ready 
 user-microservice/
 ├── src/
 │   ├── entities/          # Database entities
+│   │   └── users.entity.ts
+│   ├── auth/             # Authentication module
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── guards/
+│   │   │   └── jwt-auth.guard.ts
+│   │   └── strategies/
+│   │       └── jwt.strategy.ts
 │   ├── users/            # User module
 │   │   ├── users.controller.ts
 │   │   ├── users.service.ts
-│   │   └── users.module.ts
+│   │   ├── users.module.ts
+│   │   ├── dto/         # Data transfer objects
+│   │   │   ├── create-user.dto.ts
+│   │   │   ├── update-user.dto.ts
+│   │   │   ├── user-response.dto.ts
+│   │   │   ├── login.dto.ts
+│   │   │   └── auth-response.dto.ts
+│   │   └── test/        # Unit tests
 │   ├── app.module.ts     # Main application module
 │   └── main.ts           # Application entry point
-├── test/                 # Test files
+├── coverage/            # Test coverage reports
 ├── Dockerfile           # Docker configuration
 ├── package.json         # Dependencies and scripts
 └── README.md           # This file
 ```
-
-## 🐛 Troubleshooting
-
-### Database Connection Issues
-
-If you encounter database connection issues:
-
-1. Verify the database container is running:
-
-```bash
-docker ps | grep user-postgres
-```
-
-2. Check database logs:
-
-```bash
-docker-compose logs user-postgres
-```
-
-3. Verify environment variables are correctly set
-
-### Port Already in Use
-
-If port 3002 is already in use:
-
-```bash
-# Find the process using the port
-lsof -i :3002
-
-# Kill the process or change the PORT in .env file
-```
-
-## 📚 Additional Resources
-
-- [NestJS Documentation](https://docs.nestjs.com/)
-- [TypeORM Documentation](https://typeorm.io/)
-- [Docker Documentation](https://docs.docker.com/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

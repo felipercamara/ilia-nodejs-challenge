@@ -64,6 +64,7 @@ describe('TransactionController', () => {
 
   describe('findAll', () => {
     it('should return an array of transactions', async () => {
+      const mockUser = { userId: '709d2907-fc0f-4abd-b4e8-ff50441bb7f2' };
       const result = [
         {
           id: '1',
@@ -75,8 +76,8 @@ describe('TransactionController', () => {
 
       mockTransactionService.getTransactions.mockResolvedValue(result);
 
-      expect(await controller.getTransactions({})).toEqual(result);
-      expect(mockTransactionService.getTransactions).toHaveBeenCalled();
+      expect(await controller.getTransactions({}, mockUser as any)).toEqual(result);
+      expect(mockTransactionService.getTransactions).toHaveBeenCalledWith({}, mockUser.userId);
     });
   });
 });

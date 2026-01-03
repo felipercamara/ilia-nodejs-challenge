@@ -81,6 +81,7 @@ describe('TransactionService', () => {
 
   describe('findAll', () => {
     it('should return all transactions', async () => {
+      const userId = '709d2907-fc0f-4abd-b4e8-ff50441bb7f2';
       const transactions = [
         {
           id: '1',
@@ -98,15 +99,20 @@ describe('TransactionService', () => {
 
       const queryBuilder = {
         where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
         getMany: jest.fn().mockResolvedValue(transactions),
       };
 
       mockRepository.createQueryBuilder.mockReturnValue(queryBuilder);
 
-      const result = await service.getTransactions({});
+      const result = await service.getTransactions({}, userId);
 
       expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith(
         'transaction',
+      );
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'transaction.user_id = :userId',
+        { userId },
       );
       expect(result).toEqual([
         {

@@ -198,7 +198,9 @@ describe('UsersService', () => {
 
   describe('login', () => {
     it('should login successfully and return token', async () => {
-      const loginDto = { email: 'test@example.com', password: 'password' };
+      const loginDto = {
+        user: { email: 'test@example.com', password: 'password' },
+      };
       repository.findOne.mockResolvedValue(mockUser as any);
       (mockBcrypt.compare as jest.Mock).mockResolvedValue(true as any);
       jwtService.sign.mockReturnValue('token');
@@ -220,7 +222,9 @@ describe('UsersService', () => {
       repository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.login({ email: 'test@example.com', password: 'pass' }),
+        service.login({
+          user: { email: 'test@example.com', password: 'pass' },
+        }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -229,7 +233,9 @@ describe('UsersService', () => {
       (mockBcrypt.compare as jest.Mock).mockResolvedValue(false as any);
 
       await expect(
-        service.login({ email: 'test@example.com', password: 'wrong' }),
+        service.login({
+          user: { email: 'test@example.com', password: 'wrong' },
+        }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
