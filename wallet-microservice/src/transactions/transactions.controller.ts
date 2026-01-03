@@ -42,7 +42,7 @@ export class TransactionsController {
   @UseGuards(JwtAuthGuard)
   async createTransaction(
     @Body() createTransactionDto: CreateTransactionDto,
-    @Headers('authorization') authorization?: string,
+    @Headers('authorization') authorization: string,
   ): Promise<TransactionResponseDto> {
     // Extract token from "Bearer <token>"
     const token = authorization?.replace('Bearer ', '');

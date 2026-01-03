@@ -100,6 +100,7 @@ services:
       JWT_INTERNAL_SECRET: ${JWT_INTERNAL_SECRET}
       WALLET_SERVICE_URL: http://wallet-microservice:3001
       PORT: 3002
+      SALT: ${SALT}
     ports:
       - "3002:3002"
     depends_on:

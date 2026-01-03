@@ -19,7 +19,6 @@ export interface UserValidationResponse {
 export class UserHttpService {
   private readonly logger = new Logger(UserHttpService.name);
   private readonly userServiceUrl: string;
-  private readonly internalToken: string;
 
   constructor(
     private readonly httpService: HttpService,
@@ -28,10 +27,6 @@ export class UserHttpService {
     this.userServiceUrl =
       this.configService.get<string>('USER_SERVICE_URL') ||
       'http://localhost:3002';
-
-    // For internal communication, we can use a shared secret or JWT_INTERNAL
-    this.internalToken =
-      this.configService.get<string>('JWT_INTERNAL_SECRET') || '';
   }
 
   /**
@@ -67,38 +62,6 @@ export class UserHttpService {
       throw new UnauthorizedException(
         'Failed to validate user with User Microservice',
       );
-    }
-  }
-
-  /**
-   * Get user details from User Microservice
-   * @param userId - User ID
-   * @param authToken - JWT token for authentication
-   * @returns User data
-   */
-  async getUserById(
-    userId: string,
-    authToken: string,
-  ): Promise<UserValidationResponse> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get<UserValidationResponse>(
-          `${this.userServiceUrl}/users/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          },
-        ),
-      );
-
-      return response.data;
-    } catch (error) {
-      this.logger.error(
-        `Failed to get user ${userId}: ${error.message}`,
-        error.stack,
-      );
-      throw new UnauthorizedException('Failed to fetch user data');
     }
   }
 }

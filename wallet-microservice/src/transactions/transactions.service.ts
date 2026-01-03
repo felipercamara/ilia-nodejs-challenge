@@ -10,6 +10,11 @@ import {
 } from './dto';
 import { TransactionType } from './enums/transaction-type.enum';
 import { UserHttpService } from '../users-http';
+import {
+  FAILED_TO_CALCULATE_BALANCE,
+  FAILED_TO_CREATE_TRANSACTION,
+  USER_VALIDATION_FAILED,
+} from '@src/utils/constants';
 
 /**
  * Transactions Service
@@ -32,24 +37,17 @@ export class TransactionsService {
    */
   async createTransaction(
     createTransactionDto: CreateTransactionDto,
-    authToken?: string,
+    authToken: string,
   ): Promise<TransactionResponseDto> {
     try {
       // Validate user exists in User Microservice if auth token is provided
       // This creates the integration between wallet and user microservices
-      if (authToken) {
-        try {
-          await this.userHttpService.validateUser(
-            createTransactionDto.user_id,
-            authToken,
-          );
-        } catch (error) {
-          throw new BadRequestException(
-            'User validation failed. User does not exist or is invalid.',
-          );
-        }
-      }
+      if (!authToken) throw new BadRequestException(USER_VALIDATION_FAILED);
 
+      await this.userHttpService.validateUser(
+        createTransactionDto.user_id,
+        authToken,
+      );
       // Create new transaction entity
       const transaction = this.transactionsRepository.create({
         user_id: createTransactionDto.user_id,
@@ -65,7 +63,7 @@ export class TransactionsService {
       return this.mapToResponseDto(savedTransaction);
     } catch (error) {
       throw new BadRequestException(
-        'Failed to create transaction',
+        FAILED_TO_CREATE_TRANSACTION,
         error.message,
       );
     }
@@ -134,10 +132,7 @@ export class TransactionsService {
 
       return new BalanceResponseDto(balance);
     } catch (error) {
-      throw new BadRequestException(
-        'Failed to calculate balance',
-        error.message,
-      );
+      throw new BadRequestException(FAILED_TO_CALCULATE_BALANCE, error.message);
     }
   }
 

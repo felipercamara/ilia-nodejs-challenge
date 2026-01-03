@@ -41,7 +41,10 @@ export class UsersService {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(
+      createUserDto.password,
+      parseInt(process.env.SALT || '10'),
+    );
 
     // Create user
     const user = this.usersRepository.create({

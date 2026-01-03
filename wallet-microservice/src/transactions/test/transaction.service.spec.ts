@@ -5,6 +5,7 @@ import { CreateTransactionDto } from '../dto/create-transaction.dto';
 import { TransactionType } from '../enums/transaction-type.enum';
 import { TransactionsService } from '../transactions.service';
 import { TransactionsEntity } from '@src/entities/transactions.entity';
+import { UserHttpService } from '@src/users-http';
 
 describe('TransactionService', () => {
   let service: TransactionsService;
@@ -22,6 +23,12 @@ describe('TransactionService', () => {
     })),
   };
 
+  const mockUserHttpService = {
+    validateUser: jest.fn(),
+  };
+
+  const mockAuthToken = 'Bearer mock-jwt-token';
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -29,6 +36,10 @@ describe('TransactionService', () => {
         {
           provide: getRepositoryToken(TransactionsEntity),
           useValue: mockRepository,
+        },
+        {
+          provide: UserHttpService,
+          useValue: mockUserHttpService,
         },
       ],
     }).compile();
@@ -58,8 +69,9 @@ describe('TransactionService', () => {
       const transaction = { id: '1', ...createDto };
       mockRepository.create.mockReturnValue(transaction);
       mockRepository.save.mockResolvedValue(transaction);
+      mockUserHttpService.validateUser.mockResolvedValue(true);
 
-      const result = await service.createTransaction(createDto);
+      const result = await service.createTransaction(createDto, mockAuthToken);
 
       expect(mockRepository.create).toHaveBeenCalledWith(createDto);
       expect(mockRepository.save).toHaveBeenCalledWith(transaction);

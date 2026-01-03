@@ -175,15 +175,19 @@ npm run test:watch
 
 - `GET /` - Service health check
 
+### Authentication
+
+- `POST /auth` - Authenticate user and get JWT token (public)
+
 ### Users
 
-- `POST /users/register` - Register a new user
-- `POST /users/login` - Authenticate user and get JWT token
-- `GET /users/profile` - Get user profile (requires JWT)
-- `PUT /users/profile` - Update user profile (requires JWT)
+- `POST /users` - Register a new user (public)
+- `GET /users` - Get all users (requires JWT)
+- `GET /users/:id` - Get user by ID (requires JWT)
+- `PATCH /users/:id` - Update user (requires JWT)
 - `DELETE /users/:id` - Delete user (requires JWT)
 
-### Authentication
+### Authorization
 
 All protected routes require a JWT token in the Authorization header:
 
