@@ -177,7 +177,7 @@ npm run test:watch
 ### Authentication
 
 - `POST /auth` - Authenticate user and get JWT token
-  - Request body: `{ "email": "string", "password": "string" }`
+  - Request body: `{ "user": { "email": "string", "password": "string" } }`
   - Response: `{ "user": { "id", "email", "first_name", "last_name", "created_at", "updated_at" }, "access_token": "string" }`
 
 ### Users
