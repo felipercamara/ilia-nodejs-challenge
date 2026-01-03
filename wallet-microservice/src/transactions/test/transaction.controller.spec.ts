@@ -16,6 +16,8 @@ describe('TransactionController', () => {
     remove: jest.fn(),
   };
 
+  const mockAuthToken = 'Bearer mock-jwt-token';
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TransactionsController],
@@ -50,9 +52,12 @@ describe('TransactionController', () => {
 
       mockTransactionService.createTransaction.mockResolvedValue(result);
 
-      expect(await controller.createTransaction(dto)).toEqual(result);
+      expect(await controller.createTransaction(dto, mockAuthToken)).toEqual(
+        result,
+      );
       expect(mockTransactionService.createTransaction).toHaveBeenCalledWith(
         dto,
+        'mock-jwt-token',
       );
     });
   });

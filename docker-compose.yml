@@ -39,6 +39,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      JWT_INTERNAL_SECRET: ${JWT_INTERNAL_SECRET}
+      USER_SERVICE_URL: http://user-microservice:3002
       PORT: ${PORT}
     ports:
       - "3001:3001"
@@ -55,5 +57,65 @@ services:
           memory: 128M
     restart: unless-stopped
 
+  user-postgres:
+    image: postgres:15-alpine
+    container_name: user-postgres
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: ${USER_DB_USER}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER} -d user_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-microservice:
+    build:
+      context: ./user-microservice
+      dockerfile: Dockerfile
+    container_name: user-microservice
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      DB_HOST: user-postgres
+      DB_PORT: 5432
+      DB_NAME: user_db
+      DB_USER: ${USER_DB_USER}
+      DB_PASSWORD: ${USER_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      JWT_INTERNAL_SECRET: ${JWT_INTERNAL_SECRET}
+      WALLET_SERVICE_URL: http://wallet-microservice:3001
+      PORT: 3002
+      SALT: ${SALT}
+    ports:
+      - "3002:3002"
+    depends_on:
+      user-postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  user_postgres_data:

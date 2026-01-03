@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { UsersEntity } from './entities/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TransactionsEntity } from './entities/transactions.entity';
-import { TransactionsModule } from './transactions/transactions.module';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth';
-import { UserHttpModule } from './users-http';
+import { UsersModule } from './users/users.module';
+import { AuthController } from './auth/auth.controller';
 
 @Module({
   imports: [
@@ -20,14 +20,13 @@ import { UserHttpModule } from './users-http';
       password: process.env.DB_PASSWORD || 'wallet_pass',
       database: process.env.DB_NAME || 'wallet_db',
       synchronize: process.env.NODE_ENV !== 'production',
-      entities: [TransactionsEntity],
+      entities: [UsersEntity],
       migrations: ['./migrations/*{.ts,.js}'],
     }),
     AuthModule,
-    TransactionsModule,
-    UserHttpModule,
+    UsersModule,
   ],
-  controllers: [],
+  controllers: [AuthController],
   providers: [],
 })
 export class AppModule {}
